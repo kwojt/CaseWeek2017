@@ -17,14 +17,14 @@ foreach ($products as $product) {
 
 $findProducts = get_find_products($rule['findProducts']);
 
-$findSearchResult = search($index, $products, $findProducts);
+$findSearchResult = search($index, $findProducts);
 foreach ($findSearchResult as $baseProductId) {
     $symbolKey = $products[$baseProductId]['symbol'];
     $result[$symbolKey] = [];
 
     $matchProducts = get_match_products($rule['matchProducts'], $products, $baseProductId);
 
-    $matchSearchResult = search($index, $products, $matchProducts);
+    $matchSearchResult = search($index, $matchProducts);
     foreach ($matchSearchResult as $entry) {
         $result[$symbolKey][] = $products[$entry]['symbol'];
     }
@@ -62,15 +62,14 @@ function get_match_products(array $criteria, array $products, string $productId)
 
 /**
  * @param array $index
- * @param array $products
  * @param \Generator $criteria
  *
  * @return array
  */
-function search(array $index, array $products, \Generator $criteria): array
+function search(array $index, \Generator $criteria): array
 {
     $results = [];
-    $emptyParameters = [];
+    $emptyParameters = [[]];
 
     foreach ($criteria as $parameter => $value) {
         switch ($value) {
@@ -78,7 +77,7 @@ function search(array $index, array $products, \Generator $criteria): array
                 $results[] = $index[$parameter]['all_ids'];
                 break;
             case 'is empty':
-                $emptyParameters[$parameter] = $parameter;
+                $emptyParameters[] = $index[$parameter]['all_ids'];
                 break;
             default:
                 $results[] = $index[$parameter][$value];
@@ -89,11 +88,9 @@ function search(array $index, array $products, \Generator $criteria): array
         $results[0] :
         call_user_func_array('array_intersect_key', $results);
 
-    if (!empty($emptyParameters)) {
-        $searchResult = array_filter($searchResult, function (string $entry) use ($products, $emptyParameters): bool {
-            $interseciton = array_intersect_key($products[$entry]['parameters'], $emptyParameters);
-            return empty($interseciton);
-        });
+    if (!count($emptyParameters) > 1) {
+        $emptyParameters[0] = $searchResult;
+        $searchResult = call_user_func_array('array_diff_key', $emptyParameters);
     }
 
     return $searchResult;
