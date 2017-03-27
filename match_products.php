@@ -35,19 +35,6 @@ foreach ($findSearchResult as $productId) {
     $groups[$groupId][] = $productId;
 }
 
-/**
- * @param array &$array
- * @param string $distinction
- * @param int &$count
- *
- * @return int
- */
-function distinction_push(array &$array, string $distinction, int &$count): int
-{
-    $array[] = $distinction;
-    return $count++;
-}
-
 foreach ($groups as $group) {
     $baseProductId = $group[0];
 
