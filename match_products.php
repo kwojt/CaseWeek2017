@@ -15,22 +15,21 @@ foreach ($products as $product) {
     }
 }
 
+$mainTime = microtime(true);
 $findProducts = get_find_products($rule['findProducts']);
 
 $findSearchResult = search($index, $findProducts);
 
 $groups = [];
 foreach ($findSearchResult as $productId) {
-    $distinction = [];
+    $distinction = "";
     foreach ($rule['findProducts'] as $ruleSet) {
         if ($ruleSet['equals'] === 'any') {
-            $distinction[$ruleSet['parameter']] = $products[$productId]['parameters'][$ruleSet['parameter']];
+            $distinction .= $ruleSet['parameter'] . $products[$productId]['parameters'][$ruleSet['parameter']];
         }
     }
-    ksort($distinction);
-    $groupId = md5(json_encode($distinction));
-    $groups[$groupId] ?? $groups[$groupId] = [];
-    $groups[$groupId][] = $productId;
+    $groups[$distinction] ?? $groups[$distinction] = [];
+    $groups[$distinction][] = $productId;
 }
 
 foreach ($groups as $group) {
@@ -50,6 +49,7 @@ foreach ($groups as $group) {
         $result[$symbolKey] = $matchSearchResultSymbols;
     }
 }
+echo microtime(true) - $mainTime . "\n";
 
 file_put_contents('result.json', json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
