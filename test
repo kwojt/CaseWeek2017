@@ -1,0 +1,6 @@
+#!/bin/bash
+
+app=$1
+shift 1
+
+/usr/bin/time -f "time %e memo %M" php "${app:?}" "$@"
