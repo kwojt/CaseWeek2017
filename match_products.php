@@ -19,20 +19,16 @@ $findProducts = get_find_products($rule['findProducts']);
 
 $findSearchResult = search($index, $findProducts);
 
-$distinctionArray = [];
-$distinctionCount = 0;
 $groups = [];
 foreach ($findSearchResult as $productId) {
-    $distinction = [];
+    $distinction = "";
     foreach ($rule['findProducts'] as $ruleSet) {
         if ($ruleSet['equals'] === 'any') {
-            $distinction[$ruleSet['parameter']] = $products[$productId]['parameters'][$ruleSet['parameter']];
+            $distinction .= $ruleSet['parameter'] . $products[$productId]['parameters'][$ruleSet['parameter']];
         }
     }
-    ksort($distinction);
-    $groupId = md5(json_encode($distinction));
-    $groups[$groupId] ?? $groups[$groupId] = [];
-    $groups[$groupId][] = $productId;
+    $groups[$distinction] ?? $groups[$distinction] = [];
+    $groups[$distinction][] = $productId;
 }
 
 foreach ($groups as $group) {
