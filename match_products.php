@@ -20,7 +20,6 @@ $findProducts = get_find_products($rule['findProducts']);
 $findSearchResult = search($index, $findProducts);
 
 $groups = [];
-$timeForeach = microtime(true);
 foreach ($findSearchResult as $productId) {
     $distinction = [];
     foreach ($rule['findProducts'] as $ruleSet) {
@@ -33,9 +32,7 @@ foreach ($findSearchResult as $productId) {
     $groups[$groupId] ?? $groups[$groupId] = [];
     $groups[$groupId][] = $productId;
 }
-echo microtime(true) - $timeForeach . "\n";
 
-$matchTime = microtime(true);
 foreach ($groups as $group) {
     $baseProductId = $group[0];
 
@@ -53,9 +50,6 @@ foreach ($groups as $group) {
         $result[$symbolKey] = $matchSearchResultSymbols;
     }
 }
-echo microtime(true) - $matchTime . "\n";
-
-ksort($result);
 
 file_put_contents('result.json', json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
