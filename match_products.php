@@ -23,18 +23,16 @@ $distinctionArray = [];
 $distinctionCount = 0;
 $groups = [];
 foreach ($findSearchResult as $productId) {
-    $distinction = '';
+    $distinction = [];
     foreach ($rule['findProducts'] as $ruleSet) {
         if ($ruleSet['equals'] === 'any') {
-            $distinction .= $ruleSet['parameter'] . $products[$productId]['parameters'][$ruleSet['parameter']];
+            $distinction[$ruleSet['parameter']] = $products[$productId]['parameters'][$ruleSet['parameter']];
         }
     }
-    $groupIndex = array_search($distinction, $distinctionArray);
-    $distinction = $groupIndex !== false ?
-        $groupIndex :
-        distinction_push($distinctionArray, $distinction, $distinctionCount);
-    $groups[$distinction] ?? $groups[$distinction] = [];
-    $groups[$distinction][] = $productId;
+    ksort($distinction);
+    $groupId = md5(json_encode($distinction));
+    $groups[$groupId] ?? $groups[$groupId] = [];
+    $groups[$groupId][] = $productId;
 }
 
 /**
