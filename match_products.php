@@ -18,7 +18,6 @@ foreach ($products as $product) {
 $findProducts = get_find_products($rule['findProducts']);
 
 $findSearchResult = search($index, $findProducts);
-echo "Products: " . count($findSearchResult) . "\n";
 
 $groups = [];
 foreach ($findSearchResult as $productId) {
@@ -50,7 +49,6 @@ foreach ($groups as $group) {
     }
 }
 
-//file_put_contents('result.json', json_encode($result, JSON_UNESCAPED_UNICODE));
 echo json_encode($result, JSON_UNESCAPED_UNICODE);
 
 /**
