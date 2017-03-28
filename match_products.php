@@ -4,33 +4,12 @@ $result = [];
 $products = json_decode(file_get_contents($argv[1]), true);
 $rule = json_decode(file_get_contents($argv[2]), true);
 
-$index = [];
-foreach ($products as $product) {
-    foreach ($product['parameters'] as $name => $value) {
-        $index[$name] ?? $index[$name] = ['all_ids' => []];
-        $index[$name][$value] ?? $index[$name][$value] = [];
-
-        $index[$name][$value][$product['id']] = $product['id'];
-        $index[$name]['all_ids'][$product['id']] = $product['id'];
-    }
-}
+$index = create_index($products);
 
 $findProducts = get_find_products($rule['findProducts']);
-
 $findSearchResult = search($index, $findProducts);
 
-$groups = [];
-foreach ($findSearchResult as $productId) {
-    $distinction = "";
-    foreach ($rule['findProducts'] as $ruleSet) {
-        if ($ruleSet['equals'] === 'any') {
-            $distinction .= $ruleSet['parameter'] . $products[$productId]['parameters'][$ruleSet['parameter']];
-        }
-    }
-    $groups[$distinction] ?? $groups[$distinction] = [];
-    $groups[$distinction][] = $productId;
-}
-
+$groups = create_groups($findSearchResult, $rule, $products);
 foreach ($groups as $group) {
     $baseProductId = $group[0];
 
@@ -52,6 +31,26 @@ foreach ($groups as $group) {
 echo json_encode($result, JSON_UNESCAPED_UNICODE);
 
 /**
+ * @param array $products
+ *
+ * @return array
+ */
+function create_index(array $products): array
+{
+    $index = [];
+    foreach ($products as $product) {
+        foreach ($product['parameters'] as $name => $value) {
+            $index[$name] ?? $index[$name] = ['all_ids' => []];
+            $index[$name][$value] ?? $index[$name][$value] = [];
+
+            $index[$name][$value][$product['id']] = $product['id'];
+            $index[$name]['all_ids'][$product['id']] = $product['id'];
+        }
+    }
+    return $index;
+}
+
+/**
  * @param array $criteria
  *
  * @return \Generator
@@ -61,6 +60,29 @@ function get_find_products(array $criteria): \Generator
     foreach ($criteria as $criterion) {
         yield $criterion['parameter'] => $criterion['equals'];
     }
+}
+
+/**
+ * @param array $findSearchResult
+ * @param array $rule
+ * @param array $products
+ *
+ * @return array
+ */
+function create_groups(array $findSearchResult, array $rule, array $products): array
+{
+    $groups = [];
+    foreach ($findSearchResult as $productId) {
+        $distinction = "";
+        foreach ($rule['findProducts'] as $ruleSet) {
+            if ($ruleSet['equals'] === 'any') {
+                $distinction .= $ruleSet['parameter'] . $products[$productId]['parameters'][$ruleSet['parameter']];
+            }
+        }
+        $groups[$distinction] ?? $groups[$distinction] = [];
+        $groups[$distinction][] = $productId;
+    }
+    return $groups;
 }
 
 /**
