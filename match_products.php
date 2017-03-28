@@ -18,6 +18,7 @@ foreach ($products as $product) {
 $findProducts = get_find_products($rule['findProducts']);
 
 $findSearchResult = search($index, $findProducts);
+echo "Products: " . count($findSearchResult) . "\n";
 
 $groups = [];
 foreach ($findSearchResult as $productId) {
@@ -108,7 +109,7 @@ function search(array $index, \Generator $criteria): array
         $results[0] :
         call_user_func_array('array_intersect_key', $results);
 
-    if (!count($emptyParameters) > 1) {
+    if (count($emptyParameters) > 1) {
         $emptyParameters[0] = $searchResult;
         $searchResult = call_user_func_array('array_diff_key', $emptyParameters);
     }
