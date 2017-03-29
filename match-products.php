@@ -30,11 +30,11 @@ foreach ($base as $productFind) {
         }
 
         $wanted = false;
+        break;
     }
 
     // Jeśli produkt nie jest poszukiwany to go olewam
-    if($wanted)
-    echo "Pierwsze wanted: " . ($wanted ? "true" : "false");
+    echo "Pierwsze wanted: " . ($wanted ? "true" : "false") . "\n";
     if(!$wanted) continue;
     // W innym przypadku...
     // Tworzę tablicę dla dopasowań
@@ -51,31 +51,33 @@ foreach ($base as $productFind) {
         foreach ($rule["findProducts"] as $arg) {
 
             // Jeśli nie ma takiego parametru, a miał być
-            if ($arg["equals"] == "any" && !isset($productMatch["parameters"][$arg["parameter"]])) {
-                $wanted = false;
-                break;
+            if ($arg["equals"] == "any" && isset($productMatch["parameters"][$arg["parameter"]])) {
+                continue;
             }
         
             // Jeśli jest taki parametr, a miało go nie być
-            if ($arg["equals"] == "is empty" && isset($productMatch["parameters"][$arg["parameter"]])) {
-                $wanted = false;
-                break;
+            if ($arg["equals"] == "is empty" && !isset($productMatch["parameters"][$arg["parameter"]])) {
+                continue;
+            }
+
+            // Pozostały nam do sprawdzenia this i cokolwiek, oba wymagają pozytywnego isset
+            if (!isset($productFind["parameters"][$arg["parameter"]])) {
+                $wanted = "false";
+                break;;
             }
 
             // Jeśli parametry miały być identyczne, a nie są
             if ($arg["equals"] == "this" && $productFind["parameters"][$arg["parameter"]] != $productMatch["parameters"][$arg["parameters"]]) {
-                $wanted = false;
-                break;
+                continue;
             }
         
             // Inne wymagania, jeśli nie będzie choć jednego to nie chcemy tego produktu
             if ($productMatch["parameters"][$arg["parameter"]] != $arg["equals"]) {
-                $wanted = false;
-                break;
+                continue;
             }
 
-            // Jeśli spełni wszystkie wymagania to spoko, nic się nie dzieje
-            // Oczywiście w tej chwili
+            $wanted = false;
+            break;
         }
 
         // Jeśli produkt nie pasuje
